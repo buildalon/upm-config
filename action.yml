@@ -1,0 +1,26 @@
+name: Buildalon UPM Config
+description: 'A GitHub Action for setting Unity UPM private scoped registry configurations in CI/CD workflows.'
+branding:
+  color: 'red'
+  icon: 'archive'
+inputs:
+  registry-url:
+    description: 'The URL of the private scoped registry.'
+    required: true
+  auth-token:
+    description: 'The authentication token for the private scoped registry. Required if username and password are not provided.'
+    required: false
+  username:
+    description: 'The username for the private scoped registry. Required if auth_token is not provided.'
+    required: false
+  password:
+    description: 'The password for the private scoped registry. Required if auth_token is not provided.'
+    required: false
+  always-auth:
+    description: 'Whether to always authenticate with the private scoped registry. Defaults to true.'
+    required: false
+    default: 'true'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
