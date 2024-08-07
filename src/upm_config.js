@@ -23,7 +23,7 @@ async function Run() {
 module.exports = { Run };
 
 async function authenticate(registry_url, username, password) {
-    core.info('Authenticating...');
+    core.debug('Authenticating...');
     const ascii_auth = `${username}:${password}`.toString('ascii');
     const base64_auth = Buffer.from(ascii_auth).toString('base64');
     core.setSecret(base64_auth);
@@ -59,8 +59,7 @@ async function authenticate(registry_url, username, password) {
 }
 
 async function validate_auth_token(registry_url, auth_token) {
-    core.info('Validating the auth token...');
-    // validate that the auth token is valid by fetching the list of packages
+    core.debug('Validating the auth token...');
     let output = '';
     await exec.exec('curl', [
         '-X', 'GET',
@@ -84,7 +83,7 @@ async function validate_auth_token(registry_url, auth_token) {
 }
 
 async function save_upm_config(registry_url, auth_token) {
-    core.info('Saving .upmconfig.toml...');
+    core.debug('Saving .upmconfig.toml...');
     const upm_config_toml_path = get_upm_config_toml_path();
     try {
         await fs.access(upm_config_toml_path);
