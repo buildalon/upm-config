@@ -1,0 +1,75 @@
+name: validate
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+    branches:
+      - '*'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+jobs:
+  validate:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ macos-latest, windows-latest, ubuntu-latest ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: buildalon/upm-config
+        uses: ./
+        with:
+          registry-url: ${{ secrets.UPM_REGISTRY_URL }}
+          auth-token: ${{ secrets.UPM_AUTH_TOKEN }}
+
+      - run: |
+          # macOS and Linux '~/.upmconfig.toml'
+          # windows '%USERPROFILE%\.upmconfig.toml'
+
+          if [[ "$OSTYPE" == "msys" ]]; then
+            upmconfig="$USERPROFILE\\.upmconfig.toml"
+          else
+            upmconfig="$HOME/.upmconfig.toml"
+          fi
+
+          if [[ ! -f "$upmconfig" ]]; then
+            echo ".upmconfig.toml does not exist"
+            exit 1
+          fi
+
+          chmod +w "$upmconfig"
+          rm "$upmconfig"
+        shell: bash
+
+      - name: buildalon/upm-config
+        uses: ./
+        with:
+          registry-url: ${{ secrets.UPM_REGISTRY_URL }}
+          username: ${{ secrets.UPM_USERNAME }}
+          password: ${{ secrets.UPM_PASSWORD }}
+
+      - run: |
+          # macOS and Linux '~/.upmconfig.toml'
+          # windows '%USERPROFILE%\.upmconfig.toml'
+
+          if [[ "$OSTYPE" == "msys" ]]; then
+            upmconfig="$USERPROFILE\\.upmconfig.toml"
+          else
+            upmconfig="$HOME/.upmconfig.toml"
+          fi
+
+          if [[ ! -f "$upmconfig" ]]; then
+            echo ".upmconfig.toml does not exist"
+            exit 1
+          fi
+
+          chmod +w "$upmconfig"
+          rm "$upmconfig"
+        shell: bash
