@@ -1,5 +1,7 @@
 # Buildalon UPM Config
 
+[![Discord](https://img.shields.io/discord/939721153688264824.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/VM9cWJ9rjH) [![validate](https://github.com/buildalon/upm-config/actions/workflows/validate.yml/badge.svg?branch=main&event=push)](https://github.com/buildalon/upm-config/actions/workflows/validate.yml)
+
 A GitHub Action for setting Unity Engine UPM private scoped registry credentials in CI/CD workflows.
 
 ## How to use
