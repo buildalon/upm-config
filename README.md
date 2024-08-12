@@ -10,7 +10,7 @@ A GitHub Action for setting Unity Engine UPM private scoped registry credentials
 
 ```yaml
 steps:
-  - uses: buildalon/upm-config@v2
+  - uses: buildalon/upm-config@v1
     with:
       registry-url: 'http://upm.registry.com:4873'
       username: ${{ secrets.UPM_USERNAME }}
