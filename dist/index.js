@@ -26238,9 +26238,14 @@ async function save_upm_config(registry_url, auth_token) {
     core.debug(`upm_config_toml_path: "${upm_config_toml_path}"`);
     const overwrite = core.getInput('overwrite') === 'true';
     try {
-        await fs.promises.access(upm_config_toml_path);
-        if (overwrite) {
-            await fs.promises.writeFile(upm_config_toml_path, '');
+        const fileHandle = await fs.promises.open(upm_config_toml_path, 'r');
+        try {
+            if (overwrite) {
+                await fs.promises.writeFile(upm_config_toml_path, '');
+            }
+        }
+        finally {
+            fileHandle.close();
         }
     }
     catch (error) {
