@@ -26236,6 +26236,7 @@ async function validate_auth_token(registry_url, auth_token) {
 async function save_upm_config(registry_url, auth_token) {
     core.debug('Saving .upmconfig.toml...');
     const upm_config_toml_path = get_upm_config_toml_path();
+    core.debug(`upm_config_toml_path: ${upm_config_toml_path}`);
     try {
         await fs.promises.access(upm_config_toml_path);
     }
@@ -26249,6 +26250,14 @@ async function save_upm_config(registry_url, auth_token) {
     if (!upm_config_toml.includes(registry_url)) {
         const alwaysAuth = core.getInput('always-auth') === 'true';
         await fs.promises.appendFile(upm_config_toml_path, `registry_url = "${registry_url}"\nauth_token = "${auth_token}"\nalwaysAuth = ${alwaysAuth}\n`);
+    }
+    const fileHandle = await fs.promises.open(upm_config_toml_path, 'r');
+    try {
+        const content = await fileHandle.readFile({ encoding: 'utf-8' });
+        core.debug(`.upmconfig.toml:\n${content}`);
+    }
+    finally {
+        fileHandle.close();
     }
 }
 function get_upm_config_toml_path() {

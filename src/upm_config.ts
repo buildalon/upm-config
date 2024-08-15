@@ -22,7 +22,7 @@ async function Run() {
 
 export { Run }
 
-async function authenticate(registry_url, username, password) {
+async function authenticate(registry_url: string, username: string, password: string): Promise<string> {
     core.debug('Authenticating...');
     const ascii_auth = Buffer.from(`${username}:${password}`).toString('ascii');
     const base64_auth = Buffer.from(ascii_auth).toString('base64');
@@ -58,7 +58,7 @@ async function authenticate(registry_url, username, password) {
     }
 }
 
-async function validate_auth_token(registry_url, auth_token) {
+async function validate_auth_token(registry_url: string, auth_token: string): Promise<void> {
     core.debug('Validating the auth token...');
     let output = '';
     await exec.exec('curl', [
@@ -82,9 +82,10 @@ async function validate_auth_token(registry_url, auth_token) {
     }
 }
 
-async function save_upm_config(registry_url, auth_token) {
+async function save_upm_config(registry_url: string, auth_token: string): Promise<void> {
     core.debug('Saving .upmconfig.toml...');
     const upm_config_toml_path = get_upm_config_toml_path();
+    core.debug(`upm_config_toml_path: ${upm_config_toml_path}`);
     try {
         await fs.promises.access(upm_config_toml_path);
     } catch (error) {
@@ -98,11 +99,16 @@ async function save_upm_config(registry_url, auth_token) {
         const alwaysAuth = core.getInput('always-auth') === 'true';
         await fs.promises.appendFile(upm_config_toml_path, `registry_url = "${registry_url}"\nauth_token = "${auth_token}"\nalwaysAuth = ${alwaysAuth}\n`);
     }
+    const fileHandle = await fs.promises.open(upm_config_toml_path, 'r');
+    try {
+        const content = await fileHandle.readFile({ encoding: 'utf-8' });
+        core.debug(`.upmconfig.toml:\n${content}`);
+    } finally {
+        fileHandle.close();
+    }
 }
 
-function get_upm_config_toml_path() {
-    // macOS and Linux '~/.upmconfig.toml'
-    // winodows '%USERPROFILE%\.upmconfig.toml'
+function get_upm_config_toml_path(): string {
     switch (process.platform) {
         case 'win32':
             return path.join(process.env.USERPROFILE, '.upmconfig.toml');
