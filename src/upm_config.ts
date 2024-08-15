@@ -3,7 +3,7 @@ import exec = require('@actions/exec');
 import path = require('path');
 import fs = require('fs');
 
-async function Run() {
+async function Run(): Promise<void> {
     const registry_url = core.getInput('registry-url', { required: true }).trim();
     let auth_token = core.getInput('auth-token');
     if (!auth_token) {
