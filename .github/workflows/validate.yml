@@ -44,6 +44,7 @@ jobs:
             exit 1
           fi
 
+          cat "$upmconfig"
           chmod +w "$upmconfig"
           rm "$upmconfig"
         shell: bash
@@ -70,6 +71,7 @@ jobs:
             exit 1
           fi
 
+          cat "$upmconfig"
           chmod +w "$upmconfig"
           rm "$upmconfig"
         shell: bash
