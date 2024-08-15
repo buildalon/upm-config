@@ -83,9 +83,8 @@ async function validate_auth_token(registry_url: string, auth_token: string): Pr
 }
 
 async function save_upm_config(registry_url: string, auth_token: string): Promise<void> {
-    core.debug('Saving .upmconfig.toml...');
     const upm_config_toml_path = get_upm_config_toml_path();
-    core.debug(`upm_config_toml_path: ${upm_config_toml_path}`);
+    core.debug(`upm_config_toml_path: "${upm_config_toml_path}"`);
     const overwrite = core.getInput('overwrite') === 'true';
     try {
         await fs.promises.access(upm_config_toml_path);
