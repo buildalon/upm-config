@@ -20,7 +20,9 @@ inputs:
     description: 'Whether to always authenticate with the private scoped registry. Defaults to true.'
     required: false
     default: 'true'
-
+  overwrite:
+    description: 'Whether to overwrite the existing configuration file. Defaults to false.'
+    required: false
 runs:
   using: 'node20'
   main: 'dist/index.js'
