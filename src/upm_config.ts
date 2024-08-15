@@ -1,14 +1,14 @@
-const core = require('@actions/core');
-const exec = require('@actions/exec');
-const path = require('path');
-const fs = require('fs/promises');
+import core = require('@actions/core');
+import exec = require('@actions/exec');
+import path = require('path');
+import fs = require('fs');
 
-async function Run() {
-    const registry_url = core.getInput('registry-url', { required: true });
+async function Run(): Promise<void> {
+    const registry_url = core.getInput('registry-url', { required: true }).trim();
     let auth_token = core.getInput('auth-token');
     if (!auth_token) {
-        const username = core.getInput('username', { required: true });
-        const password = core.getInput('password', { required: true });
+        const username = core.getInput('username', { required: true }).trim();
+        const password = core.getInput('password', { required: true }).trim();
         auth_token = await authenticate(registry_url, username, password);
     }
     else {
@@ -20,11 +20,11 @@ async function Run() {
     await save_upm_config(registry_url, auth_token);
 }
 
-module.exports = { Run };
+export { Run }
 
-async function authenticate(registry_url, username, password) {
+async function authenticate(registry_url: string, username: string, password: string): Promise<string> {
     core.debug('Authenticating...');
-    const ascii_auth = `${username}:${password}`.toString('ascii');
+    const ascii_auth = Buffer.from(`${username}:${password}`).toString('ascii');
     const base64_auth = Buffer.from(ascii_auth).toString('base64');
     core.setSecret(base64_auth);
     const payload = {
@@ -58,7 +58,7 @@ async function authenticate(registry_url, username, password) {
     }
 }
 
-async function validate_auth_token(registry_url, auth_token) {
+async function validate_auth_token(registry_url: string, auth_token: string): Promise<void> {
     core.debug('Validating the auth token...');
     let output = '';
     await exec.exec('curl', [
@@ -82,27 +82,40 @@ async function validate_auth_token(registry_url, auth_token) {
     }
 }
 
-async function save_upm_config(registry_url, auth_token) {
-    core.debug('Saving .upmconfig.toml...');
+async function save_upm_config(registry_url: string, auth_token: string): Promise<void> {
     const upm_config_toml_path = get_upm_config_toml_path();
+    core.debug(`upm_config_toml_path: "${upm_config_toml_path}"`);
+    const overwrite = core.getInput('overwrite') === 'true';
     try {
-        await fs.access(upm_config_toml_path);
+        const fileHandle = await fs.promises.open(upm_config_toml_path, 'r');
+        try {
+            if (overwrite) {
+                await fs.promises.writeFile(upm_config_toml_path, '');
+            }
+        } finally {
+            fileHandle.close();
+        }
     } catch (error) {
-        await fs.writeFile(upm_config_toml_path, '');
+        await fs.promises.writeFile(upm_config_toml_path, '');
     }
     if (process.platform !== 'win32') {
-        await fs.chmod(upm_config_toml_path, 0o777);
+        await fs.promises.chmod(upm_config_toml_path, 0o777);
     }
-    const upm_config_toml = await fs.readFile(upm_config_toml_path, 'utf-8');
+    const upm_config_toml = await fs.promises.readFile(upm_config_toml_path, 'utf-8');
     if (!upm_config_toml.includes(registry_url)) {
         const alwaysAuth = core.getInput('always-auth') === 'true';
-        await fs.appendFile(upm_config_toml_path, `registry_url = "${registry_url}"\nauth_token = "${auth_token}"\nalwaysAuth = ${alwaysAuth}\n`);
+        await fs.promises.appendFile(upm_config_toml_path, `[npmAuth."${registry_url}"]\ntoken = "${auth_token}"\nalwaysAuth = ${alwaysAuth}\n`);
+    }
+    const fileHandle = await fs.promises.open(upm_config_toml_path, 'r');
+    try {
+        const content = await fileHandle.readFile({ encoding: 'utf-8' });
+        core.debug(`.upmconfig.toml:\n${content}`);
+    } finally {
+        fileHandle.close();
     }
 }
 
-function get_upm_config_toml_path() {
-    // macOS and Linux '~/.upmconfig.toml'
-    // winodows '%USERPROFILE%\.upmconfig.toml'
+function get_upm_config_toml_path(): string {
     switch (process.platform) {
         case 'win32':
             return path.join(process.env.USERPROFILE, '.upmconfig.toml');

@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-latest, windows-latest, ubuntu-latest ]
+        os: [macos-latest, windows-latest, ubuntu-latest]
 
     steps:
       - uses: actions/checkout@v4
@@ -30,20 +30,17 @@ jobs:
           auth-token: ${{ secrets.UPM_AUTH_TOKEN }}
 
       - run: |
-          # macOS and Linux '~/.upmconfig.toml'
-          # windows '%USERPROFILE%\.upmconfig.toml'
-
           if [[ "$OSTYPE" == "msys" ]]; then
             upmconfig="$USERPROFILE\\.upmconfig.toml"
           else
             upmconfig="$HOME/.upmconfig.toml"
           fi
-
           if [[ ! -f "$upmconfig" ]]; then
             echo ".upmconfig.toml does not exist"
             exit 1
           fi
-
+          echo "upmconfig: $upmconfig"
+          cat "$upmconfig"
           chmod +w "$upmconfig"
           rm "$upmconfig"
         shell: bash
@@ -56,20 +53,17 @@ jobs:
           password: ${{ secrets.UPM_PASSWORD }}
 
       - run: |
-          # macOS and Linux '~/.upmconfig.toml'
-          # windows '%USERPROFILE%\.upmconfig.toml'
-
           if [[ "$OSTYPE" == "msys" ]]; then
             upmconfig="$USERPROFILE\\.upmconfig.toml"
           else
             upmconfig="$HOME/.upmconfig.toml"
           fi
-
           if [[ ! -f "$upmconfig" ]]; then
             echo ".upmconfig.toml does not exist"
             exit 1
           fi
-
+          echo "upmconfig: $upmconfig"
+          cat "$upmconfig"
           chmod +w "$upmconfig"
           rm "$upmconfig"
         shell: bash

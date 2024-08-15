@@ -26147,20 +26147,23 @@ exports["default"] = _default;
 
 /***/ }),
 
-/***/ 867:
-/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+/***/ 2409:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.Run = Run;
 const core = __nccwpck_require__(2186);
 const exec = __nccwpck_require__(1514);
 const path = __nccwpck_require__(1017);
-const fs = __nccwpck_require__(3292);
-
+const fs = __nccwpck_require__(7147);
 async function Run() {
-    const registry_url = core.getInput('registry-url', { required: true });
+    const registry_url = core.getInput('registry-url', { required: true }).trim();
     let auth_token = core.getInput('auth-token');
     if (!auth_token) {
-        const username = core.getInput('username', { required: true });
-        const password = core.getInput('password', { required: true });
+        const username = core.getInput('username', { required: true }).trim();
+        const password = core.getInput('password', { required: true }).trim();
         auth_token = await authenticate(registry_url, username, password);
     }
     else {
@@ -26171,12 +26174,9 @@ async function Run() {
     await validate_auth_token(registry_url, auth_token);
     await save_upm_config(registry_url, auth_token);
 }
-
-module.exports = { Run };
-
 async function authenticate(registry_url, username, password) {
     core.debug('Authenticating...');
-    const ascii_auth = `${username}:${password}`.toString('ascii');
+    const ascii_auth = Buffer.from(`${username}:${password}`).toString('ascii');
     const base64_auth = Buffer.from(ascii_auth).toString('base64');
     core.setSecret(base64_auth);
     const payload = {
@@ -26205,11 +26205,11 @@ async function authenticate(registry_url, username, password) {
         const auth_token = response.token;
         core.setSecret(auth_token);
         return auth_token;
-    } else {
+    }
+    else {
         throw new Error(response.error);
     }
 }
-
 async function validate_auth_token(registry_url, auth_token) {
     core.debug('Validating the auth token...');
     let output = '';
@@ -26233,28 +26233,42 @@ async function validate_auth_token(registry_url, auth_token) {
         throw new Error(response.error);
     }
 }
-
 async function save_upm_config(registry_url, auth_token) {
-    core.debug('Saving .upmconfig.toml...');
     const upm_config_toml_path = get_upm_config_toml_path();
+    core.debug(`upm_config_toml_path: "${upm_config_toml_path}"`);
+    const overwrite = core.getInput('overwrite') === 'true';
     try {
-        await fs.access(upm_config_toml_path);
-    } catch (error) {
-        await fs.writeFile(upm_config_toml_path, '');
+        const fileHandle = await fs.promises.open(upm_config_toml_path, 'r');
+        try {
+            if (overwrite) {
+                await fs.promises.writeFile(upm_config_toml_path, '');
+            }
+        }
+        finally {
+            fileHandle.close();
+        }
+    }
+    catch (error) {
+        await fs.promises.writeFile(upm_config_toml_path, '');
     }
     if (process.platform !== 'win32') {
-        await fs.chmod(upm_config_toml_path, 0o777);
+        await fs.promises.chmod(upm_config_toml_path, 0o777);
     }
-    const upm_config_toml = await fs.readFile(upm_config_toml_path, 'utf-8');
+    const upm_config_toml = await fs.promises.readFile(upm_config_toml_path, 'utf-8');
     if (!upm_config_toml.includes(registry_url)) {
         const alwaysAuth = core.getInput('always-auth') === 'true';
-        await fs.appendFile(upm_config_toml_path, `registry_url = "${registry_url}"\nauth_token = "${auth_token}"\nalwaysAuth = ${alwaysAuth}\n`);
+        await fs.promises.appendFile(upm_config_toml_path, `[npmAuth."${registry_url}"]\ntoken = "${auth_token}"\nalwaysAuth = ${alwaysAuth}\n`);
+    }
+    const fileHandle = await fs.promises.open(upm_config_toml_path, 'r');
+    try {
+        const content = await fileHandle.readFile({ encoding: 'utf-8' });
+        core.debug(`.upmconfig.toml:\n${content}`);
+    }
+    finally {
+        fileHandle.close();
     }
 }
-
 function get_upm_config_toml_path() {
-    // macOS and Linux '~/.upmconfig.toml'
-    // winodows '%USERPROFILE%\.upmconfig.toml'
     switch (process.platform) {
         case 'win32':
             return path.join(process.env.USERPROFILE, '.upmconfig.toml');
@@ -26262,6 +26276,7 @@ function get_upm_config_toml_path() {
             return path.join(process.env.HOME, '.upmconfig.toml');
     }
 }
+
 
 /***/ }),
 
@@ -26342,14 +26357,6 @@ module.exports = require("events");
 
 "use strict";
 module.exports = require("fs");
-
-/***/ }),
-
-/***/ 3292:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("fs/promises");
 
 /***/ }),
 
@@ -28177,20 +28184,23 @@ module.exports = parseParams
 /******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be isolated against other modules in the chunk.
+// This entry need to be wrapped in an IIFE because it need to be in strict mode.
 (() => {
-const core = __nccwpck_require__(2186);
-const upm_config = __nccwpck_require__(867);
+"use strict";
+var exports = __webpack_exports__;
 
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __nccwpck_require__(2186);
+const upm_config = __nccwpck_require__(2409);
 const main = async () => {
     try {
         await upm_config.Run();
-    } catch (error) {
+    }
+    catch (error) {
         core.setFailed(error);
         process.exit(1);
     }
-}
-
+};
 main();
 
 })();
