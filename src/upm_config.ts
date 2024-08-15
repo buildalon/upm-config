@@ -1,7 +1,7 @@
-const core = require('@actions/core');
-const exec = require('@actions/exec');
-const path = require('path');
-const fs = require('fs/promises');
+import core = require('@actions/core');
+import exec = require('@actions/exec');
+import path = require('path');
+import fs = require('fs');
 
 async function Run() {
     const registry_url = core.getInput('registry-url', { required: true });
@@ -20,11 +20,11 @@ async function Run() {
     await save_upm_config(registry_url, auth_token);
 }
 
-module.exports = { Run };
+export { Run }
 
 async function authenticate(registry_url, username, password) {
     core.debug('Authenticating...');
-    const ascii_auth = `${username}:${password}`.toString('ascii');
+    const ascii_auth = Buffer.from(`${username}:${password}`).toString('ascii');
     const base64_auth = Buffer.from(ascii_auth).toString('base64');
     core.setSecret(base64_auth);
     const payload = {
@@ -86,17 +86,17 @@ async function save_upm_config(registry_url, auth_token) {
     core.debug('Saving .upmconfig.toml...');
     const upm_config_toml_path = get_upm_config_toml_path();
     try {
-        await fs.access(upm_config_toml_path);
+        await fs.promises.access(upm_config_toml_path);
     } catch (error) {
-        await fs.writeFile(upm_config_toml_path, '');
+        await fs.promises.writeFile(upm_config_toml_path, '');
     }
     if (process.platform !== 'win32') {
-        await fs.chmod(upm_config_toml_path, 0o777);
+        await fs.promises.chmod(upm_config_toml_path, 0o777);
     }
-    const upm_config_toml = await fs.readFile(upm_config_toml_path, 'utf-8');
+    const upm_config_toml = await fs.promises.readFile(upm_config_toml_path, 'utf-8');
     if (!upm_config_toml.includes(registry_url)) {
         const alwaysAuth = core.getInput('always-auth') === 'true';
-        await fs.appendFile(upm_config_toml_path, `registry_url = "${registry_url}"\nauth_token = "${auth_token}"\nalwaysAuth = ${alwaysAuth}\n`);
+        await fs.promises.appendFile(upm_config_toml_path, `registry_url = "${registry_url}"\nauth_token = "${auth_token}"\nalwaysAuth = ${alwaysAuth}\n`);
     }
 }
 
