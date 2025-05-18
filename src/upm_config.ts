@@ -3,7 +3,7 @@ import exec = require('@actions/exec');
 import path = require('path');
 import fs = require('fs');
 
-async function Run(): Promise<void> {
+export async function Run(): Promise<void> {
     const registry_url = core.getInput('registry-url', { required: true }).trim();
     let auth_token = core.getInput('auth-token');
     if (!auth_token) {
@@ -19,8 +19,6 @@ async function Run(): Promise<void> {
     await validate_auth_token(registry_url, auth_token);
     await save_upm_config(registry_url, auth_token);
 }
-
-export { Run }
 
 async function authenticate(registry_url: string, username: string, password: string): Promise<string> {
     core.debug('Authenticating...');
