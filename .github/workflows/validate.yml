@@ -1,13 +1,10 @@
 name: validate
-
 on:
   push:
     branches: ['main']
   pull_request:
     branches: ['*']
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+  workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
 jobs:
@@ -17,16 +14,13 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-
     steps:
-      - uses: actions/checkout@v4
-
+      - uses: actions/checkout@v5
       - name: buildalon/upm-config
         uses: ./
         with:
           registry-url: ${{ secrets.UPM_REGISTRY_URL }}
           auth-token: ${{ secrets.UPM_AUTH_TOKEN }}
-
       - run: |
           if [[ "$OSTYPE" == "msys" ]]; then
             upmconfig="$USERPROFILE\\.upmconfig.toml"
@@ -42,14 +36,12 @@ jobs:
           chmod +w "$upmconfig"
           rm "$upmconfig"
         shell: bash
-
       - name: buildalon/upm-config
         uses: ./
         with:
           registry-url: ${{ secrets.UPM_REGISTRY_URL }}
           username: ${{ secrets.UPM_USERNAME }}
           password: ${{ secrets.UPM_PASSWORD }}
-
       - run: |
           if [[ "$OSTYPE" == "msys" ]]; then
             upmconfig="$USERPROFILE\\.upmconfig.toml"
