@@ -27,3 +27,4 @@ steps:
 | `password` | The password for the private scoped registry. | Required if auth-token is not provided. |
 | `always-auth` | Whether to always authenticate with the private scoped registry. Defaults to `true`. | false |
 | `overwrite` | Whether to overwrite the existing configuration file. | false |
+
