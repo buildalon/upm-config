@@ -7,15 +7,19 @@ on:
   workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   validate:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: buildalon/upm-config
         uses: ./
         with:
