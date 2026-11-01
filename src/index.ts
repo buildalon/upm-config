@@ -1,5 +1,5 @@
-import core = require('@actions/core');
-import upm_config = require('./upm_config');
+import * as core from '@actions/core';
+import * as upm_config from './upm_config';
 
 const main = async () => {
     try {

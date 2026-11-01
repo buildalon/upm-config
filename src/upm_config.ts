@@ -1,7 +1,7 @@
-import core = require('@actions/core');
-import exec = require('@actions/exec');
-import path = require('path');
-import fs = require('fs');
+import * as core from '@actions/core';
+import * as exec from '@actions/exec';
+import * as path from 'path';
+import * as fs from 'fs';
 
 export async function Run(): Promise<void> {
     const registry_url = core.getInput('registry-url', { required: true }).trim();
